@@ -4,6 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import seaborn as sns
+import zipfile
+import os
 
 # Set page config
 st.set_page_config(page_title="E-Commerce Dashboard", layout="wide")
@@ -12,11 +14,25 @@ st.set_page_config(page_title="E-Commerce Dashboard", layout="wide")
 custom_palette = sns.color_palette("crest")
 sns.set_palette(custom_palette)
 
-# Load dataset
+# --- Load dataset ---
 def load_data():
-    df = pd.read_csv("cleaned_ecommerce_data.csv")
+    raw_filename = "cleaned_ecommerce_data"       # without extension
+    zip_filename = "cleaned_ecommerce_data.zip"
+
+    # Check if the raw file exists
+    if not os.path.exists(raw_filename):
+        if os.path.exists(zip_filename):
+            with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
+                zip_ref.extract(raw_filename)
+        else:
+            st.error(f"❌ Missing both `{raw_filename}` and `{zip_filename}`. Please upload the data file.")
+            st.stop()
+
+    # Read CSV even without extension (explicitly specify delimiter if needed)
+    df = pd.read_csv(raw_filename)
     return df
 
+# Load data
 df = load_data()
 
 # --- Intro ---
