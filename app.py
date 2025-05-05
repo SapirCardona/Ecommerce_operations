@@ -16,20 +16,29 @@ sns.set_palette(custom_palette)
 
 # --- Load dataset ---
 def load_data():
-    raw_filename = "cleaned_ecommerce_data"       # without extension
     zip_filename = "cleaned_ecommerce_data.zip"
+    extracted_filename = None
 
-    # Check if the raw file exists
-    if not os.path.exists(raw_filename):
+    if not any(f.endswith(".csv") for f in os.listdir()):
         if os.path.exists(zip_filename):
             with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
-                zip_ref.extract(raw_filename)
+                zip_ref.extractall(".")
+                for name in zip_ref.namelist():
+                    if name.endswith(".csv"):
+                        extracted_filename = name
+                        break
         else:
-            st.error(f"❌ Missing both `{raw_filename}` and `{zip_filename}`. Please upload the data file.")
+            st.error("❌ Data file not found. Please include cleaned_ecommerce_data.zip containing a CSV file.")
             st.stop()
+    else:
+        # use first CSV found in current directory
+        extracted_filename = next((f for f in os.listdir() if f.endswith(".csv")), None)
 
-    # Read CSV even without extension (explicitly specify delimiter if needed)
-    df = pd.read_csv(raw_filename)
+    if extracted_filename is None:
+        st.error("❌ No CSV file found after extraction.")
+        st.stop()
+
+    df = pd.read_csv(extracted_filename)
     return df
 
 # Load data
